@@ -1,0 +1,8 @@
+[package]
+name = "botwrapper"
+version = "0.1.0"
+authors = ["memoryleak47 <memoryleak47@protonmail.ch>"]
+
+[dependencies]
+time = "0.1"
+bot = { path = "../bot" }
