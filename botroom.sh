@@ -14,7 +14,7 @@ init_botcache() {
 	for bot in $(get_bots)
 	do
 		if [ -d "botcache/$bot" ]; then
-			(cd botcache/$bot; git pull origin master)
+			(cd "botcache/$bot"; git pull origin master)
 		else
 			git clone "https://github.com/ml47-srl/b.3-$bot.git" botcache/$bot
 		fi
@@ -23,27 +23,21 @@ init_botcache() {
 
 # $1 = bot
 get_revs() {
-	(cd botcache/$1; git rev-list master)
+	(cd "botcache/$1"; git rev-list master)
 }
 
 create_botpair() {
 	botpair="$1"
 	bot=$(bot_from_botpair $botpair)
+	rev=$(rev_from_botpair $botpair)
 	local botpair_path="botpairs/$botpair"
 	mkdir $botpair_path
-	cp -r botwrapper $botpair_path    # created botpairs/linbot-23d4c/botwrapper
-	cp -r botcache/$bot $botpair_path/bot # created botpairs/linbot-23d4c/bot
-	(cd $botpair_path
-		(cd bot
-			git checkout -q $(rev_from_botpair $1)
-			rm -rf .git
-		)
-		(cd botwrapper
-			cargo build
-			mv target/debug/botwrapper ../bin
-		)
-		ls | grep -v ^bin$ | xargs rm -rf
-	)
+	cp -r botwrapper $botpair_path # created botpairs/linbot-23d4c/botwrapper
+	cp -r "botcache/$bot" $botpair_path/bot # created botpairs/linbot-23d4c/bot
+	(cd $botpair_path/bot; git checkout -q "$rev")
+	(cd $botpair_path/botwrapper; cargo build)
+	mv $botpair_path/botwrapper/target/debug/botwrapper $botpair_path/bin
+	(cd $botpair_path; ls | grep -v ^bin$ | xargs rm -rf)
 }
 
 create_missing_botpairs() {
