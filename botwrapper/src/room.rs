@@ -6,6 +6,7 @@ use proof::Proof;
 use fs::{read_file, write_file, force_file};
 use bot::libsrl::db::Database;
 use bot::libsrl::cell::Cell;
+use bot::{StopReason, Botfather};
 
 pub fn exec(instancepath_str : &str, proofspath_str : &str) {
 	let proofs = get_proofs(Path::new(proofspath_str));
@@ -20,13 +21,8 @@ pub fn exec(instancepath_str : &str, proofspath_str : &str) {
 
 	for i in 0..proofs.len() {
 		let proof : &Proof = &proofs[i];
-		let (success, time) = exec_single(&mut bot, proof, ProofType::Practice);
-		result.push_str(&get_result_line(i, ProofType::Practice, success, time));
-	}
-	for i in 0..proofs.len() {
-		let proof : &Proof = &proofs[i];
-		let (success, time) = exec_single(&mut bot, proof, ProofType::Proof);
-		result.push_str(&get_result_line(i, ProofType::Proof, success, time));
+		let (stop_reason, time) = exec_single(&mut bot, proof);
+		result.push_str(&get_result_line(i, stop_reason, time));
 	}
 	write_file(botfile_pbuf.as_path(), &bot.to_string()).unwrap();
 	let id = get_free_result_id(instancepath);
@@ -62,35 +58,34 @@ fn get_proofs(proofspath : &Path) -> Vec<Proof> {
 	vec
 }
 
-enum ProofType { Proof, Practice }
-
-fn exec_single(bot : &mut Bot, proof : &Proof, ptype : ProofType) -> (bool, u32) {
+fn exec_single(bot : &mut Bot, proof : &Proof) -> (StopReason, u32) {
 	let src_db : Database = (*proof.get_db()).clone();
 	let mut db : Database = src_db.clone();
 
 	let start_time = now().to_timespec();
-	match ptype {
-		ProofType::Practice => { bot.practice(proof.get_target(), &mut db); },
-		ProofType::Proof => { bot.proof(proof.get_target(), &mut db); }
-	}
+	bot.call(&mut db, proof.get_target());
 	let time : u32 = (now().to_timespec() - start_time).num_milliseconds() as u32;
+	// TODO timeout
 
 	let mut wanted_result : Vec<Cell> = src_db.get_rules().clone();
 	wanted_result.push(proof.get_target().clone());
-	let success = db.get_rules() == wanted_result;
+	let stop_reason = match db.get_rules() == wanted_result {
+		true => StopReason::Win,
+		false => StopReason::Fail
+	};
 
-	(success, time)
+	(stop_reason, time)
 }
 
-fn get_result_line(proof_id : usize, ptype : ProofType, success : bool, time : u32) -> String {
+fn get_result_line(proof_id : usize, stop_reason : StopReason, time : u32) -> String {
 	let mut string = String::new();
-	string.push(match ptype {
-		ProofType::Proof => '+',
-		ProofType::Practice => '-'
-	});
 	string.push_str(&proof_id.to_string());
 	string.push(' ');
-	string.push(if success { 's' } else { 'f' });
+	string.push(match stop_reason {
+		StopReason::Win => 'w',
+		StopReason::Fail => 'f',
+		StopReason::Timeout => 't'
+	});
 	string.push(' ');
 	string.push_str(&time.to_string());
 	string.push('\n');
