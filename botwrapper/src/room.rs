@@ -96,13 +96,10 @@ fn exec_single(bot : Bot, proof : &Proof) -> (StopReason, u32, Bot) {
 	drop(th1);
 	drop(th2);
 
-	let mut wanted_result : Vec<Cell> = { let mut x = src_db.get_rules().clone(); x.push(src_target); x };
+	let wanted_result : Vec<Cell> = { let mut x = src_db.get_rules().clone(); x.push(src_target); x };
 
 	if let Some((out_bot, out_db)) = result_option {
-		let stop_reason = match out_db.get_rules() == wanted_result {
-			true => StopReason::Win,
-			false => StopReason::Fail
-		};
+		let stop_reason = if out_db.get_rules() == wanted_result { StopReason::Win } else { StopReason::Fail };
 
 		return (stop_reason, time, out_bot);
 	} else  {
@@ -135,5 +132,5 @@ fn get_free_result_id(instancepath : &Path) -> u32 {
 			break;
 		}
 	}
-	i
+	return i;
 }
