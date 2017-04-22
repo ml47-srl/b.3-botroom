@@ -60,7 +60,7 @@ fn get_proofs(proofspath : &Path) -> Vec<Proof> {
 	vec
 }
 
-fn exec_single(mut bot : Bot, proof : &Proof) -> (StopReason, u32, Bot) {
+fn exec_single(bot : Bot, proof : &Proof) -> (StopReason, u32, Bot) {
 	use std::thread;
 	use std::sync::mpsc;
 	use std::mem::drop;
@@ -68,9 +68,10 @@ fn exec_single(mut bot : Bot, proof : &Proof) -> (StopReason, u32, Bot) {
 	let (s, r) = mpsc::channel();
 
 	let src_db : Database = (*proof.get_db()).clone();
+	let src_target : Cell = (*proof.get_target()).clone();
 
 	let mut th_db : Database = src_db.clone();
-	let th_target : Cell = (*proof.get_target()).clone();
+	let th_target : Cell = src_target.clone();
 	let th_bot = bot.clone();
 
 	let timeout = Duration::from_secs(5); // TODO dynamic timeout
@@ -91,22 +92,22 @@ fn exec_single(mut bot : Bot, proof : &Proof) -> (StopReason, u32, Bot) {
 	let result_option = r.recv().unwrap();
 
 	let time : u32 = (now().to_timespec() - start_time).num_milliseconds() as u32;
+
 	drop(th1);
 	drop(th2);
 
-	let mut wanted_result : Vec<Cell> = src_db.get_rules().clone();
-	wanted_result.push(proof.get_target().clone());
-	let (stop_reason, bot) =
-		if let Some((bot, db)) = result_option {
-			(match db.get_rules() == wanted_result {
-				true => StopReason::Win,
-				false => StopReason::Fail
-			}, bot)
-		} else  {
-			(StopReason::Timeout, bot)
+	let mut wanted_result : Vec<Cell> = { let mut x = src_db.get_rules().clone(); x.push(src_target); x };
+
+	if let Some((out_bot, out_db)) = result_option {
+		let stop_reason = match out_db.get_rules() == wanted_result {
+			true => StopReason::Win,
+			false => StopReason::Fail
 		};
 
-	(stop_reason, time, bot)
+		return (stop_reason, time, out_bot);
+	} else  {
+		return (StopReason::Timeout, time, bot);
+	}
 }
 
 fn get_result_line(proof_id : usize, stop_reason : StopReason, time : u32) -> String {
