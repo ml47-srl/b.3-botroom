@@ -68,6 +68,7 @@ exec_bot() {
 				elif [ $((2 * ($(instance_work $instance)+1))) == $(instance_work $(( $instance - 1 ))) ]; then
 					break
 				fi
+				instance="$(($instance - 1))"
 			done
 		fi
 		proofs_path="../../proofs"
