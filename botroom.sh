@@ -15,7 +15,7 @@ init_bots() {
 		if [ -d "$bot_path" ]; then
 			(cd "$bot_path/code"
 				x="$(git rev-list master)"
-				git pull origin master
+				git pull origin master &>/dev/null
 				if [ ! "$x" == "$(git rev-list master)" ]; then
 					reload_bot="true"
 					rm -rf ../i* ../bin
@@ -50,7 +50,6 @@ count_instances() {
 
 # $1 = bot
 exec_bot() {
-	echo "Executing bot: '$1'"
 	(cd bots/$1
 		local count=$(count_instances)
 		local newest=$(($count - 1))
@@ -72,6 +71,7 @@ exec_bot() {
 			done
 		fi
 		proofs_path="../../proofs"
+		echo "Executing bot: '$1-$instance'"
 		./bin "exec" i$instance $proofs_path
 	)
 }
@@ -108,7 +108,7 @@ exec_correct_bot() {
 
 init_bots
 exec_correct_bot
-git pull origin master
+git pull origin master &>/dev/null
 
 # TODO if time is right => commit
 
