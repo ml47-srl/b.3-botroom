@@ -4,9 +4,9 @@ use time::now;
 use bot::Bot;
 use proof::Proof;
 use fs::{read_file, write_file, force_file};
-use bot::libsrl::db::Database;
-use bot::libsrl::cell::Cell;
-use bot::{StopReason, Botfather};
+use libsrl::db::Database;
+use libsrl::cell::Cell;
+use botfather::{StopReason, Botfather};
 use std::time::Duration;
 
 pub fn exec(instancepath_str : &str, proofspath_str : &str) {

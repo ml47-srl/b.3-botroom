@@ -6,3 +6,5 @@ authors = ["memoryleak47 <memoryleak47@protonmail.ch>"]
 [dependencies]
 time = "0.1"
 bot = { path = "../code" }
+botfather = { git = "https://github.com/ml47-srl/b.3-botfather.git" }
+libsrl = { git = "https://github.com/ml47-srl/b.3-libsrl.git" }

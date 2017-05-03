@@ -1,6 +1,9 @@
 extern crate bot;
-use bot::libsrl;
+extern crate libsrl;
+extern crate botfather;
+
 pub extern crate time;
+
 mod fs;
 mod proof;
 mod room;
