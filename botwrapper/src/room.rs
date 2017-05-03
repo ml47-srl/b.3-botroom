@@ -16,7 +16,7 @@ pub fn exec(instancepath_str : &str, proofspath_str : &str) {
 	let botfile_pbuf = instancepath.join("botfile");
 
 	let content = read_file(botfile_pbuf.as_path());
-	let mut bot : Bot = *Bot::by_string(content.unwrap());
+	let mut bot : Bot = Bot::by_string(&content.unwrap());
 
 	let mut result : String = String::new();
 
