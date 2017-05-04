@@ -1,0 +1,8 @@
+[package]
+name = "room"
+version = "0.1.0"
+authors = ["memoryleak47 <memoryleak47@protonmail.ch>"]
+
+[dependencies]
+botwrapper = { path = "../botwrapper" }
+___bot___ = { path = "../bots/___bot___/code" }

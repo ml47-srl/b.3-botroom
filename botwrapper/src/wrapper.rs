@@ -1,15 +1,14 @@
 use std::path::Path;
 
 use time::now;
-use bot::Bot;
 use proof::Proof;
 use fs::{read_file, write_file, force_file};
-use libsrl::db::Database;
-use libsrl::cell::Cell;
+use botfather::libsrl::db::Database;
+use botfather::libsrl::cell::Cell;
 use botfather::{StopReason, Botfather};
 use std::time::Duration;
 
-pub fn exec(instancepath_str : &str, proofspath_str : &str) {
+fn exec<Bot: Botfather>(instancepath_str : &str, proofspath_str : &str) {
 	let proofs = get_proofs(Path::new(proofspath_str));
 
 	let instancepath = Path::new(instancepath_str);
@@ -32,7 +31,7 @@ pub fn exec(instancepath_str : &str, proofspath_str : &str) {
 	force_file(pbuf.as_path(), &result).unwrap();
 }
 
-pub fn new(instancepath : &str) {
+fn new<Bot: Botfather>(instancepath : &str) {
 	let instancepath = Path::new(instancepath);
 	let botfile_pbuf = instancepath.join("botfile");
 	let content = Bot::gen().to_string();
@@ -60,7 +59,7 @@ fn get_proofs(proofspath : &Path) -> Vec<Proof> {
 	vec
 }
 
-fn exec_single(bot : Bot, proof : &Proof) -> (StopReason, u32, Bot) {
+fn exec_single<Bot: Botfather>(bot : Bot, proof : &Proof) -> (StopReason, u32, Bot) {
 	use std::thread;
 	use std::sync::mpsc;
 	use std::mem::drop;
@@ -133,4 +132,17 @@ fn get_free_result_id(instancepath : &Path) -> u32 {
 		}
 	}
 	return i;
+}
+
+pub fn run<Bot: Botfather>(args: Vec<String>) {
+	if args[1] == "new" {
+		let ref instancepath = args[2];
+		new::<Bot>(instancepath);
+	} else if args[1] == "exec" {
+		let ref instancepath = args[2];
+		let ref proofspath = args[3];
+		exec::<Bot>(instancepath, proofspath);
+	} else {
+		println!("unknown command");
+	}
 }

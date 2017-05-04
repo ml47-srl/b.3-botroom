@@ -27,10 +27,21 @@ init_bots() {
 		fi
 
 		if [ "$reload_bot" == "true" ]; then
-			cp -r botwrapper $bot_path # created bots/linbot/botwrapper
-			(cd $bot_path/botwrapper; cargo build)
-			mv $bot_path/botwrapper/target/debug/botwrapper $bot_path/bin
-			rm -rf $bot_path/botwrapper
+			(cd room
+				cp Cargo.toml{,_bkp}
+				cp src/main.rs{,_bkp}
+				sed "s/___bot___/$bot/g" -i Cargo.toml
+				sed "s/___Bot___/${bot^}/g" -i Cargo.toml
+				sed "s/___bot___/$bot/g" -i src/main.rs
+				sed "s/___Bot___/${bot^}/g" -i src/main.rs
+
+				cargo build
+
+				mv target/debug/room "../$bot_path/bin"
+
+				mv Cargo.toml{_bkp,}
+				mv src/main.rs{_bkp,}
+			)
 		fi
 	done
 }

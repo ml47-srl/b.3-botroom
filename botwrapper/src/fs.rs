@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::fs::{remove_dir, create_dir, remove_file, read_dir, ReadDir, File};
 use std::io::{Write, Read};
-use libsrl::error::SRLError;
+use botfather::libsrl::error::SRLError;
 
 pub fn assert_dir(path : &Path) {
 	if path.is_file() {

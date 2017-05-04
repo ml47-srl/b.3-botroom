@@ -1,6 +1,6 @@
-use libsrl::cell::Cell;
-use libsrl::db::Database;
-use libsrl::error::SRLError;
+use botfather::libsrl::cell::Cell;
+use botfather::libsrl::db::Database;
+use botfather::libsrl::error::SRLError;
 use fs::{assert_dir, force_file, read_file};
 use std::path::Path;
 
